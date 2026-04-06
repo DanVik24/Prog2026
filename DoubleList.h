@@ -19,8 +19,9 @@ public:
         do {
             cout << "\n\n\tВыберите действие:\n";
             cout << "\t1. Добавить\n";
-            cout << "\t2. Удалить \n";
-            cout << "\t3. Показать\n";
+            cout << "\t2. Удалить (предшествующий второму с конца)\n";
+            cout << "\t3. Вывести все детали на экран\n";
+            cout << "\t4. Сохранить список в файл\n";
             cout << "\t0. Выход\n";
             cout << "\tВаш выбор: ";
             cin >> temp;
@@ -33,8 +34,9 @@ public:
             case 1: add_sorted(); break;
             case 2: remove_before_second_last(); break;
             case 3: print(); break;
-            case 0: cout << "\tВыход из программы.\n"; break;
-            default: cout << "\tНеверный выбор. Попробуйте снова.\n"; break;
+            case 4: save_to_file(); break;
+            case 0: cout << "\tВыход.\n"; break;
+            default: cout << "\tошибка выбора.\n"; break;
             }
         } while (temp != 0);
     }
@@ -97,7 +99,7 @@ private:
 
     void remove_before_second_last() {
         if (size < 3) {
-            cout << "\tНевозможно удалить: в списке менее 3 элементов.\n";
+            cout << "\tНевозможно удалить: в списке меньше 3 деталей.\n";
             return;
         }
         Node* to_delete = tail->pPrev->pPrev;
@@ -114,7 +116,44 @@ private:
             delete to_delete;
         }
         --size;
-        cout << "\tЭлемент, перед вторым с конца, удалён.\n";
+        cout << "\tЭлемент, предшествующий второму с конца, удалён.\n";
+    }
+
+    void save_to_file() {
+        if (head == nullptr) {
+            cout << "\tСписок пуст, нечего сохранять.\n";
+            return;
+        }
+        string path;
+        cout << "\tВведите путь к файлу для сохранения: ";
+        cin >> path;
+        // Открываем файл в режиме перезаписи (trunc), чтобы при повторном сохранении не дублировать
+        // Если хотите добавление, замените ios::trunc на ios::app
+        ofstream file(path, ios::trunc);
+        if (!file) {
+            cout << "\tНе удалось создать/открыть файл.\n";
+            return;
+        }
+        file.close(); // закроем, так как ListToFile открывает свой поток с ios::app
+        // Но ListToFile использует ios::app, что приведёт к дописыванию в конец.
+        // Чтобы перезаписывать, изменим логику: пройдём по узлам и запишем вручную.
+        // Проще: использовать отдельную функцию записи, не ListToFile.
+        // Переделаем: будем открывать файл один раз и писать все данные.
+        ofstream out(path, ios::trunc);
+        if (!out) {
+            cout << "\tОшибка открытия файла для записи.\n";
+            return;
+        }
+        Node* cur = head;
+        while (cur) {
+            out << cur->date.get_shifr() << '\n'
+                << cur->date.get_price() << '\n'
+                << cur->date.get_ves() << '\n'
+                << cur->date.get_name() << "\n\n";
+            cur = cur->pNext;
+        }
+        out.close();
+        cout << "\tСписок сохранён в файл: " << path << "\n";
     }
 
     void clear() {

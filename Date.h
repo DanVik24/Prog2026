@@ -19,6 +19,7 @@ public:
     int get_shifr() const { return shifr; }
     int get_price() const { return price; }
     int get_ves() const { return ves; }
+    string get_name() const { return name; }
 
     void input_menu() {
         cout << "\n\n\tВыберите способ записи данных:\n"
@@ -43,15 +44,16 @@ public:
             input_random();
     }
 
+    // Генерация случайных положительных значений
     void input_random() {
         static bool seeded = false;
         if (!seeded) {
             srand(static_cast<unsigned>(time(nullptr)));
             seeded = true;
         }
-        shifr = rand() % 9999 + 1;          // 1..9999
-        price = rand() % 101;               // 0..100
-        ves = rand() % 10000;               // 0..9999
+        shifr = rand() % 9999 + 1;           // 1..9999
+        price = rand() % 100 + 1;            // 1..100
+        ves = rand() % 9999 + 1;             // 1..9999
         const string names[] = { "Винт","Гайка","Шайба","Болт","Шпилька",
                                 "Гровер","Шплинт","Заклёпка","Штифт","Пружина" };
         name = names[rand() % 10] + "_" + to_string(rand() % 1000);
@@ -59,33 +61,47 @@ public:
             << " вес=" << ves << " название=" << name << "\n";
     }
 
+    // Ручной ввод с проверками >0 и цена ≤100
     void input() {
-        cout << "\n\tВвод данных детали (только целые числа):\n";
+        cout << "\n\tВвод данных детали (целые положительные числа):\n";
+        // Цена: 1..100
         do {
-            cout << "\tЦена (0..100): ";
+            cout << "\tЦена (1..100): ";
             if (!(cin >> price)) {
                 cin.clear();
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 cout << "\tОшибка. Повторите.\n";
                 continue;
             }
-            if (price < 0 || price > 100)
-                cout << "\tЦена должна быть от 0 до 100.\n";
-        } while (price < 0 || price > 100);
+            if (price < 1 || price > 100)
+                cout << "\tЦена должна быть от 1 до 100.\n";
+        } while (price < 1 || price > 100);
 
-        cout << "\tШифр (целое): ";
-        while (!(cin >> shifr)) {
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            cout << "\tОшибка. Повторите: ";
-        }
+        // Шифр > 0
+        do {
+            cout << "\tШифр (>0): ";
+            if (!(cin >> shifr)) {
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                cout << "\tОшибка. Повторите.\n";
+                continue;
+            }
+            if (shifr <= 0)
+                cout << "\tШифр должен быть положительным.\n";
+        } while (shifr <= 0);
 
-        cout << "\tВес (целое): ";
-        while (!(cin >> ves)) {
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            cout << "\tОшибка. Повторите: ";
-        }
+        // Вес > 0
+        do {
+            cout << "\tВес (>0): ";
+            if (!(cin >> ves)) {
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                cout << "\tОшибка. Повторите.\n";
+                continue;
+            }
+            if (ves <= 0)
+                cout << "\tВес должен быть положительным.\n";
+        } while (ves <= 0);
 
         cout << "\tНаименование: ";
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
@@ -93,6 +109,7 @@ public:
         if (name.empty()) name = "Без названия";
     }
 
+    // Чтение из файла: если значение ≤0, заменяем на 1
     void FileToList(string& path) {
         ifstream file(path);
         if (!file) {
@@ -100,22 +117,23 @@ public:
             return;
         }
         file >> shifr >> price >> ves;
+        // Проверка и коррекция
+        if (shifr <= 0) shifr = 1;
+        if (price <= 0) price = 1;
+        else if (price > 100) price = 100;
+        if (ves <= 0) ves = 1;
+
         file.ignore(numeric_limits<streamsize>::max(), '\n');
         getline(file, name);
         if (file.fail()) {
             cout << "\tОшибка чтения, установлены значения по умолчанию\n";
-            shifr = 0; price = 0; ves = 0; name = "";
-        }
-        else {
-            if (price < 0) price = 0;
-            if (price > 100) {
-                cout << "\tЦена в файле >100, установлено 100\n";
-                price = 100;
-            }
+            shifr = 1; price = 1; ves = 1; name = "Без названия";
         }
         file.close();
+        cout << "\tДеталь загружена из файла.\n";
     }
 
+    // Запись в файл (простой формат, без меток)
     void ListToFile(string& path) const {
         ofstream file(path, ios::app);
         if (!file) {
@@ -126,6 +144,7 @@ public:
         file.close();
     }
 
+    // Редактирование с проверками
     bool correction() {
         cout << "\n\tЧто изменить?\n\t1-Цена 2-Шифр 3-Вес 4-Наименование (5-назад)\n\t";
         int ch;
@@ -138,32 +157,42 @@ public:
         switch (ch) {
         case 1:
             do {
-                cout << "\tНовая цена (0..100): ";
+                cout << "\tНовая цена (1..100): ";
                 if (!(cin >> price)) {
                     cin.clear();
                     cin.ignore(numeric_limits<streamsize>::max(), '\n');
                     cout << "\tОшибка.\n";
                     continue;
                 }
-                if (price < 0 || price > 100)
-                    cout << "\tЦена должна быть от 0 до 100.\n";
-            } while (price < 0 || price > 100);
+                if (price < 1 || price > 100)
+                    cout << "\tЦена должна быть от 1 до 100.\n";
+            } while (price < 1 || price > 100);
             break;
         case 2:
-            cout << "\tНовый шифр: ";
-            while (!(cin >> shifr)) {
-                cin.clear();
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                cout << "\tОшибка: ";
-            }
+            do {
+                cout << "\tНовый шифр (>0): ";
+                if (!(cin >> shifr)) {
+                    cin.clear();
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    cout << "\tОшибка.\n";
+                    continue;
+                }
+                if (shifr <= 0)
+                    cout << "\tШифр должен быть положительным.\n";
+            } while (shifr <= 0);
             break;
         case 3:
-            cout << "\tНовый вес: ";
-            while (!(cin >> ves)) {
-                cin.clear();
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                cout << "\tОшибка: ";
-            }
+            do {
+                cout << "\tНовый вес (>0): ";
+                if (!(cin >> ves)) {
+                    cin.clear();
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    cout << "\tОшибка.\n";
+                    continue;
+                }
+                if (ves <= 0)
+                    cout << "\tВес должен быть положительным.\n";
+            } while (ves <= 0);
             break;
         case 4:
             cout << "\tНовое наименование: ";
@@ -189,7 +218,7 @@ private:
     string name;
 };
 
-Date::Date() : shifr(0), price(0), ves(0), name("") {}
+Date::Date() : shifr(1), price(1), ves(1), name("") {}
 Date::~Date() {}
 
 #endif
