@@ -1,34 +1,30 @@
-#include "Date.h" //подрубаем данные узла
+#ifndef NODE_H
+#define NODE_H
 
-// Конкретный элемент кот содержит в себе ссылку на пред элемент списка, на следующий
+#include "Date.h"
+
+class DoubleList; // предварительное объявление для friend
+
 class Node
 {
-public:
-	Node();
-	Node(Node* pNext, Node* pPrev);
-	~Node();
+    friend class DoubleList; // разрешаем DoubleList доступ к приватным полям
 
-	Node* pNext;	//следующий
-	Node* pPrev;	//предыдущий
-	Date date;
+public:
+    // Конструкторы
+    Node() : pNext(nullptr), pPrev(nullptr) {}
+    Node(Node* next, Node* prev) : pNext(next), pPrev(prev) {}
+    ~Node() {}
+
+    // Геттеры (опционально, для безопасного чтения полей)
+    Node* getNext() const { return pNext; }
+    Node* getPrev() const { return pPrev; }
+    Date& getDate() { return date; }
+    const Date& getDate() const { return date; }
 
 private:
-	/*т.к класс Node используется исключительно 
-	внутри класса DoubleList, модификатор доступа опустим
-	а вообще можно было использовать геттеры и сеттеры*/
+    Node* pNext;   // указатель на следующий узел
+    Node* pPrev;   // указатель на предыдущий узел
+    Date date;     // данные (объект класса Date)
 };
 
-Node::Node() //создание первого узла
-{
-	this->pNext = nullptr;
-	this->pPrev = nullptr;
-}
-Node::Node(Node* pNext, Node* pPrev) //создание последующих узлов
-{
-	this->pNext = pNext;
-	this->pPrev = pPrev;
-}
-
-Node::~Node()
-{
-}
+#endif // NODE_H

@@ -1,4 +1,5 @@
-﻿#include <iostream>
+﻿#define NOMINMAX  // запрещает определение макросов min/max в windows.h
+#include <iostream>
 #include <windows.h>
 #include "DoubleList.h" //подрубаем список
 
