@@ -1,28 +1,29 @@
-#ifndef DATE_H
+п»ї#ifndef DATE_H
 #define DATE_H
 
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <cstdio>
-#include <limits>   // для numeric_limits
+#include <limits>
+#include <cstdlib>
+#include <ctime>
 
 using namespace std;
 
 class Date
 {
 public:
-    // Конструктор: инициализация всех полей значениями по умолчанию
     Date();
     ~Date();
 
     int get_shifr() const { return shifr; }
+    int get_price() const { return price; }
+    int get_ves() const { return ves; }
 
-    // Метод выбора способа ввода (теперь не вызывается из конструктора)
     void input_menu() {
-        cout << "\n\n\tВыберите способ записи данных в элемент списка:"
-            << "\n\t1 - через консоль\n\t2 - из файла\n\tдругое - случайный ввод"
-            << "\n\tВаш выбор: ";
+        cout << "\n\n\tР’С‹Р±РµСЂРёС‚Рµ СЃРїРѕСЃРѕР± Р·Р°РїРёСЃРё РґР°РЅРЅС‹С…:\n"
+            << "\t1 - С‡РµСЂРµР· РєРѕРЅСЃРѕР»СЊ\n\t2 - РёР· С„Р°Р№Р»Р°\n\t3 - СЃР»СѓС‡Р°Р№РЅС‹Р№ РІРІРѕРґ\n"
+            << "\tР’Р°С€ РІС‹Р±РѕСЂ: ";
         int temp;
         cin >> temp;
         if (cin.fail()) {
@@ -30,146 +31,145 @@ public:
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             temp = 0;
         }
-        if (temp == 1) {
+        if (temp == 1)
             input();
-        }
         else if (temp == 2) {
-            cout << "\tВ файле должна содержаться запись вида: "
-                << "\n\tВведите путь к файлу вида: С:\\folder\\text.txt \n\t";
             string file;
+            cout << "\tРџСѓС‚СЊ Рє С„Р°Р№Р»Сѓ: ";
             cin >> file;
             FileToList(file);
         }
-        else {
+        else
             input_random();
-        }
     }
 
     void input_random() {
-        // Можно реализовать генерацию случайных значений
-        // Пока оставим заглушкой
-        cout << "\tСлучайный ввод не реализован.\n";
+        static bool seeded = false;
+        if (!seeded) {
+            srand(static_cast<unsigned>(time(nullptr)));
+            seeded = true;
+        }
+        shifr = rand() % 9999 + 1;          // 1..9999
+        price = rand() % 101;               // 0..100
+        ves = rand() % 10000;               // 0..9999
+        const string names[] = { "Р’РёРЅС‚","Р“Р°Р№РєР°","РЁР°Р№Р±Р°","Р‘РѕР»С‚","РЁРїРёР»СЊРєР°",
+                                "Р“СЂРѕРІРµСЂ","РЁРїР»РёРЅС‚","Р—Р°РєР»С‘РїРєР°","РЁС‚РёС„С‚","РџСЂСѓР¶РёРЅР°" };
+        name = names[rand() % 10] + "_" + to_string(rand() % 1000);
+        cout << "\n\tРЎР»СѓС‡Р°Р№РЅР°СЏ РґРµС‚Р°Р»СЊ: С€РёС„СЂ=" << shifr << " С†РµРЅР°=" << price
+            << " РІРµСЃ=" << ves << " РЅР°Р·РІР°РЅРёРµ=" << name << "\n";
     }
 
     void input() {
-        cout << "\n\tВведите данные детали:\n";
+        cout << "\n\tР’РІРѕРґ РґР°РЅРЅС‹С… РґРµС‚Р°Р»Рё (С‚РѕР»СЊРєРѕ С†РµР»С‹Рµ С‡РёСЃР»Р°):\n";
+        do {
+            cout << "\tР¦РµРЅР° (0..100): ";
+            if (!(cin >> price)) {
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                cout << "\tРћС€РёР±РєР°. РџРѕРІС‚РѕСЂРёС‚Рµ.\n";
+                continue;
+            }
+            if (price < 0 || price > 100)
+                cout << "\tР¦РµРЅР° РґРѕР»Р¶РЅР° Р±С‹С‚СЊ РѕС‚ 0 РґРѕ 100.\n";
+        } while (price < 0 || price > 100);
 
-        cout << "\tЦена:\t\t";
-        if (!(cin >> price)) {
-            cout << "\tОшибка ввода цены. Установлено значение 0.\n";
+        cout << "\tРЁРёС„СЂ (С†РµР»РѕРµ): ";
+        while (!(cin >> shifr)) {
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            price = 0.0;
+            cout << "\tРћС€РёР±РєР°. РџРѕРІС‚РѕСЂРёС‚Рµ: ";
         }
 
-        cout << "\tШифр:\t\t";
-        if (!(cin >> shifr)) {
-            cout << "\tОшибка ввода шифра. Установлено значение 0.\n";
+        cout << "\tР’РµСЃ (С†РµР»РѕРµ): ";
+        while (!(cin >> ves)) {
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            shifr = 0;
+            cout << "\tРћС€РёР±РєР°. РџРѕРІС‚РѕСЂРёС‚Рµ: ";
         }
 
-        cout << "\tВес:\t\t";
-        if (!(cin >> ves)) {
-            cout << "\tОшибка ввода веса. Установлено значение 0.\n";
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            ves = 0.0;
-        }
-
-        cout << "\tНаименование:\t";
+        cout << "\tРќР°РёРјРµРЅРѕРІР°РЅРёРµ: ";
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
         getline(cin, name);
-        if (name.empty()) name = "Без названия";
+        if (name.empty()) name = "Р‘РµР· РЅР°Р·РІР°РЅРёСЏ";
     }
 
-    void FileToList(string& filePath) {
-        ifstream file(filePath);
-        if (!file.is_open()) {
-            cout << "Не удалось открыть файл для чтения: " << filePath << endl;
+    void FileToList(string& path) {
+        ifstream file(path);
+        if (!file) {
+            cout << "\tРќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ С„Р°Р№Р»\n";
             return;
         }
-
-        // Чтение полей: шифр, цена, вес, затем строка наименования
         file >> shifr >> price >> ves;
-        // Пропускаем все оставшиеся символы до конца строки перед чтением названия
         file.ignore(numeric_limits<streamsize>::max(), '\n');
         getline(file, name);
-
-        // Проверка, что чтение прошло успешно
         if (file.fail()) {
-            cout << "Ошибка чтения данных из файла. Установлены значения по умолчанию.\n";
-            shifr = 0;
-            price = 0.0;
-            ves = 0.0;
-            name = "";
+            cout << "\tРћС€РёР±РєР° С‡С‚РµРЅРёСЏ, СѓСЃС‚Р°РЅРѕРІР»РµРЅС‹ Р·РЅР°С‡РµРЅРёСЏ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ\n";
+            shifr = 0; price = 0; ves = 0; name = "";
         }
-
+        else {
+            if (price < 0) price = 0;
+            if (price > 100) {
+                cout << "\tР¦РµРЅР° РІ С„Р°Р№Р»Рµ >100, СѓСЃС‚Р°РЅРѕРІР»РµРЅРѕ 100\n";
+                price = 100;
+            }
+        }
         file.close();
     }
 
-    void ListToFile(string& filePath) const {
-        ofstream file(filePath, ios::app);
-        if (!file.is_open()) {
-            cout << "Не удалось открыть файл для записи: " << filePath << endl;
+    void ListToFile(string& path) const {
+        ofstream file(path, ios::app);
+        if (!file) {
+            cout << "\tРќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ С„Р°Р№Р» РґР»СЏ Р·Р°РїРёСЃРё\n";
             return;
         }
-
-        file << shifr << endl;
-        file << price << endl;
-        file << ves << endl;
-        file << name << endl << endl;
-
+        file << shifr << '\n' << price << '\n' << ves << '\n' << name << "\n\n";
         file.close();
     }
 
     bool correction() {
-        cout << "\n\tВыберите параметр детали для изменения: "
-            << "\n\t1 - Цена\n\t2 - Шифр"
-            << "\n\t3 - Вес\n\t4 - Наименование"
-            << "\n\tДругое - назад";
-        int temp;
-        cin >> temp;
+        cout << "\n\tР§С‚Рѕ РёР·РјРµРЅРёС‚СЊ?\n\t1-Р¦РµРЅР° 2-РЁРёС„СЂ 3-Р’РµСЃ 4-РќР°РёРјРµРЅРѕРІР°РЅРёРµ (5-РЅР°Р·Р°Рґ)\n\t";
+        int ch;
+        cin >> ch;
         if (cin.fail()) {
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             return false;
         }
-
-        if (temp > 0 && temp < 5) {
-            cout << "\n\tВведите новые данные:\n";
-        }
-
-        switch (temp) {
+        switch (ch) {
         case 1:
-            cout << "\tЦена:\t\t";
-            if (!(cin >> price)) {
-                cout << "\tОшибка, цена не изменена.\n";
-                cin.clear();
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            }
+            do {
+                cout << "\tРќРѕРІР°СЏ С†РµРЅР° (0..100): ";
+                if (!(cin >> price)) {
+                    cin.clear();
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    cout << "\tРћС€РёР±РєР°.\n";
+                    continue;
+                }
+                if (price < 0 || price > 100)
+                    cout << "\tР¦РµРЅР° РґРѕР»Р¶РЅР° Р±С‹С‚СЊ РѕС‚ 0 РґРѕ 100.\n";
+            } while (price < 0 || price > 100);
             break;
         case 2:
-            cout << "\tШифр:\t\t";
-            if (!(cin >> shifr)) {
-                cout << "\tОшибка, шифр не изменён.\n";
+            cout << "\tРќРѕРІС‹Р№ С€РёС„СЂ: ";
+            while (!(cin >> shifr)) {
                 cin.clear();
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                cout << "\tРћС€РёР±РєР°: ";
             }
             break;
         case 3:
-            cout << "\tВес:\t\t";
-            if (!(cin >> ves)) {
-                cout << "\tОшибка, вес не изменён.\n";
+            cout << "\tРќРѕРІС‹Р№ РІРµСЃ: ";
+            while (!(cin >> ves)) {
                 cin.clear();
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                cout << "\tРћС€РёР±РєР°: ";
             }
             break;
         case 4:
-            cout << "\tНаименование:\t";
+            cout << "\tРќРѕРІРѕРµ РЅР°РёРјРµРЅРѕРІР°РЅРёРµ: ";
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             getline(cin, name);
+            if (name.empty()) name = "Р‘РµР· РЅР°Р·РІР°РЅРёСЏ";
             break;
         default:
             return false;
@@ -178,30 +178,18 @@ public:
     }
 
     void print() const {
-        cout << "\n\n\tДанные детали:";
-        cout << "\n\tЦена\t\t" << price;
-        cout << "\n\tШифр\t\t" << shifr;
-        cout << "\n\tВес\t\t" << ves;
-        cout << "\n\tНазвание\t" << name;
+        cout << "\n\tРЁРёС„СЂ: " << shifr << "\n\tР¦РµРЅР°: " << price
+            << "\n\tР’РµСЃ: " << ves << "\n\tРќР°РёРјРµРЅРѕРІР°РЅРёРµ: " << name;
     }
 
 private:
     int shifr;
-    double price;
-    double ves;
+    int price;
+    int ves;
     string name;
 };
 
-// Реализация конструктора и деструктора
-Date::Date()
-    : shifr(0), price(0.0), ves(0.0), name("")
-{
-    // Конструктор только инициализирует поля, не вызывает ввод
-}
+Date::Date() : shifr(0), price(0), ves(0), name("") {}
+Date::~Date() {}
 
-Date::~Date()
-{
-    // Ничего не требуется
-}
-
-#endif // DATE_H
+#endif
