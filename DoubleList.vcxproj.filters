@@ -26,8 +26,5 @@
     <ClInclude Include="Date.h">
       <Filter>Исходные файлы</Filter>
     </ClInclude>
-    <ClInclude Include="Node.h">
-      <Filter>Исходные файлы</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>
