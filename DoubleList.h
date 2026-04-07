@@ -19,9 +19,9 @@ public:
         do {
             cout << "\n\n\tВыберите действие:\n";
             cout << "\t1. Добавить\n";
-            cout << "\t2. Удалить (предшествующий второму с конца)\n";
-            cout << "\t3. Вывести все детали на экран\n";
-            cout << "\t4. Сохранить список в файл\n";
+            cout << "\t2. Удалить\n";
+            cout << "\t3. Показать\n";
+            cout << "\t4. Сохранить в файл\n";
             cout << "\t0. Выход\n";
             cout << "\tВаш выбор: ";
             cin >> temp;
@@ -69,6 +69,7 @@ private:
             return;
         }
 
+        // Вставка в начало
         if (key <= head->date.get_shifr()) {
             newNode->pNext = head;
             head->pPrev = newNode;
@@ -77,6 +78,7 @@ private:
             return;
         }
 
+        // Вставка в конец
         if (key >= tail->date.get_shifr()) {
             newNode->pPrev = tail;
             tail->pNext = newNode;
@@ -85,15 +87,26 @@ private:
             return;
         }
 
+        // Поиск места для вставки (между узлами)
         Node* cur = head;
-        while (cur->pNext != nullptr && cur->pNext->date.get_shifr() < key)
+        while (cur->pNext != nullptr && cur->pNext->date.get_shifr() < key) {
             cur = cur->pNext;
+        }
 
-        Node* nextNode = cur->pNext;
-        newNode->pNext = nextNode;
-        newNode->pPrev = cur;
-        nextNode->pPrev = newNode;
-        cur->pNext = newNode;
+        // Теперь cur – узел, ПОСЛЕ которого нужно вставить newNode
+        // (если cur->pNext == nullptr, то key должен быть больше всех, но этот случай уже отсечён)
+        if (cur->pNext == nullptr) {
+            // Аварийная ситуация: вставляем в конец (восстанавливаем корректность)
+            newNode->pPrev = tail;
+            tail->pNext = newNode;
+            tail = newNode;
+        }
+        else {
+            newNode->pNext = cur->pNext;
+            newNode->pPrev = cur;
+            cur->pNext->pPrev = newNode;
+            cur->pNext = newNode;
+        }
         ++size;
     }
 
@@ -116,12 +129,12 @@ private:
             delete to_delete;
         }
         --size;
-        cout << "\tЭлемент, предшествующий второму с конца, удалён.\n";
+        cout << "\tЭлемент, перед вторым удалён\n";
     }
 
     void save_to_file() {
         if (head == nullptr) {
-            cout << "\tСписок пуст, нечего сохранять.\n";
+            cout << "\tСписок пуст\n";
             return;
         }
         string path;
@@ -129,7 +142,7 @@ private:
         cin >> path;
         ofstream out(path, ios::trunc);
         if (!out) {
-            cout << "\tОшибка открытия файла.\n";
+            cout << "\tОшибка открытия файла\n";
             return;
         }
         Node* cur = head;
@@ -159,15 +172,15 @@ private:
             cout << "\tСписок пуст.\n";
             return;
         }
-        cout << "\n\t===== СПИСОК ДЕТАЛЕЙ =====\n";
+        cout << "\n\tСписок деталей\n";
         Node* cur = head;
         int idx = 1;
         while (cur) {
-            cout << "\n\t--- Деталь №" << idx++ << " ---";
+            cout << "\n\tДеталь " << idx++ << " ---";
             cur->date.print();
             cur = cur->pNext;
         }
-        cout << "\n\t==========================\n";
+        
     }
 };
 
